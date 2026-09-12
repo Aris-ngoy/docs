@@ -1,0 +1,71 @@
+{
+  "projectType": "sdk-library",
+  "projectName": "Nitro Modules",
+  "projectDescription": "react-native-nitrowind is a high-performance React Native module built with Nitro Modules that exposes native functionality (iOS via Swift, Android via Kotlin) directly to JavaScript.",
+  "theme": "luma",
+  "primaryColor": "#c23e5f",
+  "lightColor": "#2d5e81",
+  "darkColor": "#cf7a93",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/bare-react-native",
+              "guides/expo",
+              "guides/extending-the-module"
+            ]
+          },
+          {
+            "group": "Platform Support",
+            "pages": [
+              "platform/ios",
+              "platform/android"
+            ]
+          },
+          {
+            "group": "Help",
+            "pages": [
+              "troubleshooting",
+              "changelog"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "JavaScript API",
+            "pages": [
+              "api/nitrowind",
+              "api/types"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Native performance via Nitro Modules JSI bridge",
+    "iOS (Swift) and Android (Kotlin) native implementations",
+    "Works with bare React Native and Expo projects",
+    "TypeScript-first API with full type safety",
+    "Nitrogen codegen for automatic spec-to-native binding"
+  ],
+  "publicApiSurface": [
+    "Nitrowind (HybridObject)",
+    "Nitrowind.sum(num1: number, num2: number): number"
+  ]
+}

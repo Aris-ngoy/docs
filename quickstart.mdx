@@ -1,0 +1,131 @@
+---
+title: "Quickstart: First Synchronous Native Call with Nitrowind"
+sidebarTitle: "Quickstart"
+description: "Make your first synchronous native call with react-native-nitrowind in minutes — no bridge, no async overhead, just fast JSI-powered native code."
+---
+
+This guide walks you from a blank React Native screen to a working native function call in the fewest steps possible. By the end you will have called `Nitrowind.sum()` on a real device or simulator and seen the result returned synchronously from Swift or Kotlin.
+
+<Steps>
+  <Step title="Install the package">
+    If you have not installed `react-native-nitrowind` yet, follow the [Installation guide](/installation) to add the package and its peer dependency to your project, then run `pod install` for iOS.
+  </Step>
+
+  <Step title="Import Nitrowind">
+    Open the file where you want to call native code — your `App.tsx` is a good starting point — and import the `Nitrowind` object:
+
+    ```typescript
+    import { Nitrowind } from 'react-native-nitrowind';
+    ```
+
+    `Nitrowind` is a `HybridObject` that is instantiated once at module load time. You can call its methods anywhere in your application without any initialisation step.
+  </Step>
+
+  <Step title="Call Nitrowind.sum()">
+    Invoke `Nitrowind.sum()` with two numbers. The call is synchronous — it returns the native result immediately on the same JS thread, with no `await` or callback required:
+
+    ```typescript
+    const result = Nitrowind.sum(12, 30);
+    console.log(result); // 42
+    ```
+
+    Under the hood, the JS engine calls directly into the Swift or Kotlin implementation via JSI. There is no bridge message, no serialisation, and no async overhead.
+  </Step>
+
+  <Step title="Check the return value">
+    `Nitrowind.sum(num1, num2)` accepts two `number` arguments and returns their sum as a `number`. The TypeScript signature is:
+
+    ```typescript
+    sum(num1: number, num2: number): number;
+    ```
+
+    Passing `12` and `30` returns `42`. The value comes back typed as `number`, so you can assign it directly to state, pass it to another function, or render it in your UI.
+  </Step>
+</Steps>
+
+## Complete Example
+
+The following component is a minimal but complete working example drawn from the bare React Native example app. Copy it into your `App.tsx` to see a native call end-to-end:
+
+```tsx
+import React, { useState } from 'react';
+import { Button, StyleSheet, Text, View } from 'react-native';
+import { Nitrowind } from 'react-native-nitrowind';
+
+export default function App() {
+  const [result, setResult] = useState<number | null>(null);
+
+  const calculateSum = () => {
+    try {
+      const sum = Nitrowind.sum(12, 30);
+      setResult(sum);
+    } catch (error) {
+      console.error('Error invoking Nitrowind.sum:', error);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>NitroWind Example</Text>
+      <Text style={styles.subtitle}>
+        Fast native code powered by Nitro Modules
+      </Text>
+
+      <Button title="Test Nitrowind.sum(12, 30)" onPress={calculateSum} />
+
+      {result !== null && (
+        <View style={styles.resultBox}>
+          <Text style={styles.resultLabel}>Result from Native:</Text>
+          <Text style={styles.resultValue}>{result}</Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+    backgroundColor: '#0f172a',
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#f8fafc',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#94a3b8',
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  resultBox: {
+    marginTop: 20,
+    padding: 16,
+    backgroundColor: '#1e293b',
+    borderRadius: 12,
+    alignItems: 'center',
+    width: '100%',
+  },
+  resultLabel: {
+    fontSize: 13,
+    color: '#cbd5e1',
+    marginBottom: 4,
+  },
+  resultValue: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#38bdf8',
+  },
+});
+```
+
+Press the button on your device or simulator and you will see `42` appear — a number returned synchronously from native code.
+
+<Tip>
+  Ready to go further? Check out the Guides section for step-by-step setup instructions for a [bare React Native](/guides/bare-react-native) project and an [Expo](/guides/expo) project, including how to configure the Expo config plugin and handle custom native code.
+</Tip>

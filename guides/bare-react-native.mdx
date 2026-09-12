@@ -1,0 +1,175 @@
+---
+title: "Use react-native-nitrowind in a Bare React Native App"
+sidebarTitle: "Bare React Native"
+description: "Set up react-native-nitrowind in a bare React Native 0.76+ project, run pod install, and call native methods from JavaScript in minutes."
+---
+
+`react-native-nitrowind` ships as a standard autolinking-compatible package, so integrating it into a bare React Native project is straightforward: install, pod install on iOS, and you're ready to call native code directly from JavaScript.
+
+## Prerequisites
+
+Before you start, make sure you have the following tools available:
+
+- **React Native 0.76 or later** (the module targets the New Architecture)
+- **Node.js ≥ 22** or [Bun](https://bun.sh/) (recommended)
+- **CocoaPods** and **Xcode** for iOS builds
+- **Android Studio** with the **NDK** installed for Android builds
+
+## Setup
+
+<Steps>
+
+### Install the package
+
+Install `react-native-nitrowind` and its required peer dependency `react-native-nitro-modules`:
+
+<CodeGroup>
+
+```bash npm
+npm install react-native-nitrowind react-native-nitro-modules
+```
+
+```bash yarn
+yarn add react-native-nitrowind react-native-nitro-modules
+```
+
+```bash bun
+bun add react-native-nitrowind react-native-nitro-modules
+```
+
+</CodeGroup>
+
+### Install iOS pods
+
+Navigate into your iOS directory and run CocoaPods to link the native targets:
+
+```bash
+cd ios
+pod install
+cd ..
+```
+
+### Android — no extra steps
+
+React Native's autolinking picks up both packages on Android automatically. No changes to any Gradle files are needed.
+
+### Import and use `Nitrowind`
+
+Import the `Nitrowind` object and call `Nitrowind.sum` from any component. The following is adapted from the bare example app:
+
+```tsx
+import React, { useState } from "react";
+import { Button, StyleSheet, Text, View } from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { Nitrowind } from "react-native-nitrowind";
+
+function App() {
+  const [result, setResult] = useState<number | null>(null);
+
+  const calculateSum = () => {
+    try {
+      const sum = Nitrowind.sum(12, 30);
+      setResult(sum);
+    } catch (error) {
+      console.error("Error invoking Nitrowind.sum:", error);
+    }
+  };
+
+  return (
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.card}>
+          <Text style={styles.title}>NitroWind Bare Example</Text>
+          <Text style={styles.subtitle}>Fast native code powered by Nitro Modules</Text>
+          <View style={styles.actionContainer}>
+            <Button title="Test Nitrowind.sum(12, 30)" onPress={calculateSum} />
+          </View>
+          {result !== null && (
+            <View style={styles.resultBox}>
+              <Text style={styles.resultLabel}>Result from Native:</Text>
+              <Text style={styles.resultValue}>{result}</Text>
+            </View>
+          )}
+        </View>
+      </SafeAreaView>
+    </SafeAreaProvider>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#0f172a",
+    padding: 24,
+  },
+  card: {
+    width: "100%",
+    maxWidth: 420,
+    backgroundColor: "#1e293b",
+    borderRadius: 16,
+    padding: 24,
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#f8fafc",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "#94a3b8",
+    textAlign: "center",
+    marginBottom: 24,
+  },
+  actionContainer: {
+    width: "100%",
+    marginVertical: 12,
+  },
+  resultBox: {
+    marginTop: 20,
+    padding: 16,
+    backgroundColor: "#334155",
+    borderRadius: 12,
+    alignItems: "center",
+    width: "100%",
+  },
+  resultLabel: {
+    fontSize: 13,
+    color: "#cbd5e1",
+    marginBottom: 4,
+  },
+  resultValue: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#38bdf8",
+  },
+});
+
+export default App;
+```
+
+Pressing the button synchronously calls the native `sum` implementation and renders the return value (`42`) in the UI.
+
+### Run the app
+
+<CodeGroup>
+
+```bash iOS
+bun run ios
+```
+
+```bash Android
+bun run android
+```
+
+</CodeGroup>
+
+</Steps>
+
+<Tip>
+Wrap your root component in `SafeAreaProvider` from `react-native-safe-area-context` to handle notches and home-indicator insets correctly on both iOS and Android.
+</Tip>

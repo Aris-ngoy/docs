@@ -1,0 +1,73 @@
+---
+title: "Install react-native-nitrowind in Your React Native Project"
+sidebarTitle: "Installation"
+description: "Add react-native-nitrowind and its peer dependency react-native-nitro-modules to your project using npm, yarn, or bun, then run pod install for iOS."
+---
+
+Getting `react-native-nitrowind` into your project takes only a few minutes. The package ships pre-built native binaries for iOS and Android, and React Native's auto-linking handles the native wiring automatically — so there is no manual `build.gradle` or Xcode project editing required.
+
+<Steps>
+  <Step title="Install the package">
+    Install `react-native-nitrowind` together with its peer dependency `react-native-nitro-modules`:
+
+    <CodeGroup>
+      ```bash npm
+      npm install react-native-nitrowind react-native-nitro-modules
+      ```
+
+      ```bash yarn
+      yarn add react-native-nitrowind react-native-nitro-modules
+      ```
+
+      ```bash bun
+      bun add react-native-nitrowind react-native-nitro-modules
+      ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="iOS: install CocoaPods dependencies">
+    Navigate into the `ios/` directory and run `pod install` to let CocoaPods link the native libraries:
+
+    ```bash
+    cd ios && pod install
+    ```
+
+    After the install completes, open your `.xcworkspace` file in Xcode (not `.xcodeproj`) and build your project normally.
+  </Step>
+
+  <Step title="Android: no extra steps needed">
+    React Native's auto-linking picks up the Android module automatically when you sync Gradle. You do not need to edit any Gradle files or `AndroidManifest.xml`. Simply rebuild your Android project:
+
+    ```bash
+    npx react-native run-android
+    ```
+  </Step>
+
+  <Step title="Verify the installation">
+    Add a quick import to any TypeScript file in your project to confirm the module resolves correctly:
+
+    ```typescript
+    import { Nitrowind } from 'react-native-nitrowind';
+
+    // Calls native code synchronously — returns 42
+    const result = Nitrowind.sum(12, 30);
+    console.log(result); // 42
+    ```
+
+    If your editor shows no type errors and the app builds successfully, the installation is complete.
+  </Step>
+</Steps>
+
+<Note>
+  **React Native v0.76 or higher** is required. To use Nitro Views, upgrade to **React Native v0.78 or higher**.
+</Note>
+
+## Requirements
+
+| Requirement | Minimum Version |
+|---|---|
+| React Native | 0.76.0 |
+| Node.js | 18.0.0 |
+| Expo SDK (if using Expo) | 57 |
+| CocoaPods + Xcode (iOS) | Latest stable |
+| Android Studio + NDK (Android) | Latest stable |

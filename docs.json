@@ -1,0 +1,72 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "Nitro Modules",
+  "theme": "luma",
+  "logo": {
+    "light": "https://media.brand.dev/5c8650b7-32b6-4571-946d-28e0e7c6d434.svg",
+    "dark": "https://media.brand.dev/5c8650b7-32b6-4571-946d-28e0e7c6d434.svg"
+  },
+  "favicon": "https://media.brand.dev/2ccaff65-94cc-4017-b696-54ea2ceb6b3e.png",
+  "colors": {
+    "primary": "#c23e5f",
+    "light": "#2d5e81",
+    "dark": "#cf7a93"
+  },
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/Aris-ngoy/NitroWind"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/bare-react-native",
+              "guides/expo",
+              "guides/extending-the-module"
+            ]
+          },
+          {
+            "group": "Platform Support",
+            "pages": [
+              "platform/ios",
+              "platform/android"
+            ]
+          },
+          {
+            "group": "Help",
+            "pages": [
+              "troubleshooting",
+              "changelog"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "JavaScript API",
+            "pages": [
+              "api/nitrowind",
+              "api/types"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

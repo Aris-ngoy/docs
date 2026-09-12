@@ -1,0 +1,138 @@
+---
+title: "Extend react-native-nitrowind with Custom Native Methods"
+sidebarTitle: "Extending the Module"
+description: "Add new native methods to react-native-nitrowind by editing the TypeScript spec, running Nitrogen codegen, then implementing in Swift and Kotlin."
+---
+
+`react-native-nitrowind` is built on [Nitro Modules](https://nitro.margelo.com/), which use a **TypeScript-first** workflow: you declare every native method in a single TypeScript spec file, run the `nitrogen` codegen tool to generate the C++/Swift/Kotlin bridge code, and then fill in the native implementations. The TypeScript spec is the single source of truth for the entire API surface.
+
+<Note>
+Keep the TypeScript spec (`src/specs/nitrowind.nitro.ts`) as the single source of truth. Every method you add there is automatically reflected in the generated C++ bindings, the Swift protocol, and the Kotlin abstract class after you run codegen.
+</Note>
+
+## Workflow
+
+<Steps>
+
+### Edit the TypeScript spec
+
+Open `packages/nitro-wind/src/specs/nitrowind.nitro.ts`. The current spec contains one method:
+
+```ts
+import type { HybridObject } from "react-native-nitro-modules";
+
+export interface Nitrowind extends HybridObject<{ ios: "swift"; android: "kotlin" }> {
+  sum(num1: number, num2: number): number;
+}
+```
+
+Add a new method — for example, `multiply` — alongside the existing `sum`:
+
+```ts
+import type { HybridObject } from "react-native-nitro-modules";
+
+export interface Nitrowind extends HybridObject<{ ios: "swift"; android: "kotlin" }> {
+  sum(num1: number, num2: number): number;
+  multiply(num1: number, num2: number): number; // example addition
+}
+```
+
+You can add as many methods as you need. All primitive JavaScript types (`number`, `string`, `boolean`) and most Nitro-supported complex types are valid.
+
+### Run codegen
+
+From the package root, run the Nitrogen codegen command. This regenerates all C++ headers, the Swift protocol (`HybridNitrowindSpec`), and the Kotlin abstract class (`HybridNitrowindSpec`) to match your updated spec:
+
+```bash
+cd packages/nitro-wind
+bun run codegen
+```
+
+Nitrogen writes output into `nitrogen/generated/`. Do not edit those files by hand — they will be overwritten on the next codegen run.
+
+### Implement the method in Swift
+
+Open `packages/nitro-wind/ios/HybridNitrowind.swift`. The current implementation looks like this:
+
+```swift
+import Foundation
+
+class HybridNitrowind: HybridNitrowindSpec {
+    func sum(num1: Double, num2: Double) throws -> Double {
+        return num1 + num2
+    }
+}
+```
+
+Add the new `multiply` method:
+
+```swift
+import Foundation
+
+class HybridNitrowind: HybridNitrowindSpec {
+    func sum(num1: Double, num2: Double) throws -> Double {
+        return num1 + num2
+    }
+
+    func multiply(num1: Double, num2: Double) throws -> Double {
+        return num1 * num2
+    }
+}
+```
+
+The generated `HybridNitrowindSpec` protocol enforces that every method declared in the TypeScript spec has a corresponding Swift implementation. Xcode will show a compile error if you miss one.
+
+### Implement the method in Kotlin
+
+Open `packages/nitro-wind/android/src/main/java/com/nitrowind/HybridNitrowind.kt`. The current implementation looks like this:
+
+```kotlin
+package com.nitrowind
+
+import com.margelo.nitro.nitrowind.HybridNitrowindSpec
+
+class HybridNitrowind: HybridNitrowindSpec() {
+    override fun sum(num1: Double, num2: Double): Double {
+        return num1 + num2
+    }
+}
+```
+
+Add the `multiply` override:
+
+```kotlin
+package com.nitrowind
+
+import com.margelo.nitro.nitrowind.HybridNitrowindSpec
+
+class HybridNitrowind: HybridNitrowindSpec() {
+    override fun sum(num1: Double, num2: Double): Double {
+        return num1 + num2
+    }
+
+    override fun multiply(num1: Double, num2: Double): Double {
+        return num1 * num2
+    }
+}
+```
+
+The generated abstract class `HybridNitrowindSpec` declares every method as `abstract`, so the Kotlin compiler will report an error if any method is left unimplemented.
+
+### Use the new method from JavaScript
+
+After rebuilding the native app (`pod install` on iOS, then rebuild), the new method is available through the same `Nitrowind` import:
+
+```tsx
+import { Nitrowind } from "react-native-nitrowind";
+
+const product = Nitrowind.multiply(6, 7); // => 42
+console.log(product);
+```
+
+No changes to `src/index.ts` are needed — the `createHybridObject` call automatically exposes every method defined in the spec.
+
+</Steps>
+
+<Tip>
+The `nitro.json` file at the package root controls the C++ namespace, iOS module name, and Android namespace used during codegen. If you fork `react-native-nitrowind` and rename the module, update `cxxNamespace`, `iosModuleName`, and `androidNamespace` in that file before running `bun run codegen`.
+</Tip>

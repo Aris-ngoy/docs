@@ -1,0 +1,234 @@
+---
+title: "Troubleshooting react-native-nitrowind Setup and Runtime"
+sidebarTitle: "Troubleshooting"
+description: "Diagnose and fix common setup and runtime issues with react-native-nitrowind, from missing modules to platform build failures and Expo compatibility."
+---
+
+When integrating a JSI-based native module like `react-native-nitrowind`, most problems trace back to one of a few root causes: missing peer dependencies, a skipped native build step, or an environment that doesn't support custom native code. Work through the relevant accordion below to get back on track quickly.
+
+<Accordion title="Module not found / cannot find react-native-nitrowind">
+This error usually means the package itself — or one of its required peer dependencies — was not installed correctly.
+
+**1. Verify the package is installed**
+
+```bash
+npm list react-native-nitrowind
+```
+
+If it is missing, install it together with its peer dependency:
+
+```bash
+npm install react-native-nitrowind react-native-nitro-modules
+```
+
+**2. Confirm all peer dependencies are present**
+
+`react-native-nitrowind` requires all three of the following to be installed in your project:
+
+| Peer dependency | Required |
+|---|---|
+| `react` | any |
+| `react-native` | any (≥ 0.76) |
+| `react-native-nitro-modules` | any |
+
+```bash
+npm list react react-native react-native-nitro-modules
+```
+
+**3. Clear Metro cache and restart**
+
+```bash
+npx react-native start --reset-cache
+```
+
+If you are on Expo, run `npx expo start -c` instead.
+</Accordion>
+
+<Accordion title="iOS build fails after install">
+`react-native-nitrowind` ships native Swift code that must be compiled through CocoaPods. If you skip the `pod install` step after adding the package, Xcode will not be able to find the native targets and the build will fail.
+
+**Run `pod install` from your iOS directory:**
+
+```bash
+cd ios
+pod install
+cd ..
+```
+
+If the install fails, try updating your local pod specs first:
+
+```bash
+cd ios
+pod repo update
+pod install
+cd ..
+```
+
+**Minimum Xcode requirements**
+
+Make sure you are running a recent version of Xcode that supports the Swift features used by Nitro Modules. Xcode 15 or later is recommended.
+
+<Warning>
+Never open the `.xcodeproj` file directly. Always open the `.xcworkspace` file that CocoaPods generates — it includes the pod targets your app depends on.
+</Warning>
+</Accordion>
+
+<Accordion title="Android build fails with an NDK error">
+`react-native-nitrowind` uses C++ via the Android NDK. If the NDK is not installed, the CMake build step will fail with an error similar to `NDK not found` or `No version of NDK matched`.
+
+**Install the NDK via Android Studio:**
+
+1. Open **Android Studio** and navigate to **SDK Manager** (from the Welcome screen choose **More Actions → SDK Manager**, or from the menu bar **Tools → SDK Manager**).
+2. Select the **SDK Tools** tab.
+3. Check **NDK (Side by side)** and click **Apply**.
+
+**Pin a specific NDK version (optional but recommended)**
+
+In your `android/build.gradle`, you can pin the NDK version to match what the module expects:
+
+```groovy
+android {
+    ndkVersion "26.1.10909125"
+}
+```
+
+After installing the NDK, sync your Gradle project and rebuild:
+
+```bash
+cd android
+./gradlew clean
+cd ..
+npx react-native run-android
+```
+</Accordion>
+
+<Accordion title="Nitrowind is undefined at runtime">
+If you can import from `react-native-nitrowind` without a compile error but calling any method throws `TypeError: Cannot read property of undefined` (or the object is `undefined`), the most common cause is that `react-native-nitro-modules` is missing at runtime.
+
+**Reinstall the peer dependency:**
+
+```bash
+npm install react-native-nitro-modules
+```
+
+**Rebuild the native layer**
+
+JSI bindings are resolved at startup by the native runtime, not at bundle time. After adding the package you must do a full native rebuild — a JS-only reload is not enough.
+
+```bash
+# iOS
+cd ios && pod install && cd ..
+npx react-native run-ios
+
+# Android
+npx react-native run-android
+```
+
+**Check autolinking**
+
+`react-native-nitrowind` supports React Native's autolinking. Run the link doctor to confirm it is wired up:
+
+```bash
+npx react-native doctor
+```
+
+If autolinking is disabled in your project, follow the manual linking steps in the [installation guide](/installation).
+</Accordion>
+
+<Accordion title="Works in debug but crashes in release">
+Release builds apply additional code optimisation steps that can strip or rename native symbols that JSI relies on.
+
+**Android — check ProGuard / R8 rules**
+
+If you have ProGuard or R8 enabled, add a keep rule for the Nitro and NitroWind namespaces in your `android/app/proguard-rules.pro`:
+
+```proguard
+-keep class com.margelo.nitro.** { *; }
+-keep class com.nitrowind.** { *; }
+-keepclassmembers class * {
+    @com.facebook.jni.annotations.DoNotStrip *;
+}
+```
+
+**iOS — ensure native libraries are included**
+
+Open your Xcode project, select your app target, go to **Build Phases → Link Binary With Libraries**, and confirm the NitroWind and NitroModules frameworks are listed.
+
+**Enable symbol visibility in CMake**
+
+If you maintain a custom `CMakeLists.txt`, make sure you are not accidentally hiding all symbols:
+
+```cmake
+set(CMAKE_CXX_VISIBILITY_PRESET default)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN OFF)
+```
+
+After making these changes, create a fresh release build to verify the crash is resolved.
+</Accordion>
+
+<Accordion title="Expo Go does not load the module">
+Expo Go is a pre-built sandbox app that only includes modules bundled by the Expo team. Custom native modules — including any package that ships C++ or Swift/Kotlin native code like `react-native-nitrowind` — cannot be loaded inside Expo Go.
+
+**Use a development build instead:**
+
+```bash
+npx expo install expo-dev-client
+npx expo run:ios   # or npx expo run:android
+```
+
+A development build compiles your own native code alongside Expo's runtime, giving you the full native module support that `react-native-nitrowind` needs.
+
+<Note>
+Expo SDK 57 is supported out of the box. If you are on an older SDK, upgrade Expo before adding `react-native-nitrowind` to avoid peer dependency conflicts.
+</Note>
+</Accordion>
+
+<Accordion title="TypeScript errors on Nitrowind methods">
+TypeScript errors like `Property 'sum' does not exist on type 'NitrowindSpec'` or `Module not found: Can't resolve 'react-native-nitrowind'` in `.ts`/`.tsx` files indicate a mismatch between the installed type definitions and your TypeScript environment.
+
+**Ensure the package types are generated**
+
+`react-native-nitrowind` ships its types under `lib/typescript`. Confirm the build output is present:
+
+```bash
+ls node_modules/react-native-nitrowind/lib/typescript
+```
+
+If the directory is empty or missing, reinstall the package:
+
+```bash
+npm install react-native-nitrowind
+```
+
+**Check your `tsconfig.json` module resolution**
+
+Your project's `tsconfig.json` should include `"moduleResolution": "bundler"` or `"node"` so TypeScript can resolve the `types` field in `package.json`:
+
+```json
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler"
+  }
+}
+```
+
+**Verify the `react-native-nitro-modules` version**
+
+The Nitro spec types used by `react-native-nitrowind` are coupled to the version of `react-native-nitro-modules` that was used to generate them. Mismatched versions can cause type errors:
+
+```bash
+npm list react-native-nitro-modules
+```
+
+If the version does not match what `react-native-nitrowind` expects, update both packages together:
+
+```bash
+npm install react-native-nitrowind react-native-nitro-modules
+```
+
+After reinstalling, restart your TypeScript language server in your editor to pick up the new types.
+</Accordion>
+
+<Note>
+If none of the solutions above resolve your issue, search the existing reports or open a new one on the [GitHub issue tracker](https://github.com/aristotengoy/react-native-nitrowind/issues). Include your React Native version, platform (iOS/Android), and the full error message to get the fastest response.
+</Note>

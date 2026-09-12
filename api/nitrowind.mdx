@@ -1,0 +1,61 @@
+---
+title: "react-native-nitrowind API Reference: Nitrowind Object"
+sidebarTitle: "Nitrowind"
+description: "Complete API reference for the Nitrowind singleton HybridObject, including method signatures, parameters, return types, and usage examples."
+---
+
+The `Nitrowind` export is a **HybridObject** instantiated once via `NitroModules.createHybridObject()` from `react-native-nitro-modules`. Because the object is created at module load time, you import and call it directly — no constructor call required. Every method on it runs synchronously through the Nitro bridge, backed by a Swift implementation on iOS and a Kotlin implementation on Android.
+
+## Installation & Import
+
+```ts
+import { Nitrowind } from 'react-native-nitrowind';
+```
+
+---
+
+## Methods
+
+### sum(num1, num2)
+
+Adds two numbers using native code and returns the result synchronously. The computation runs inside the Swift or Kotlin layer — no JavaScript arithmetic is involved — and the value is returned immediately to the calling thread.
+
+<ParamField path="num1" type="number" required>
+  The first number to add.
+</ParamField>
+
+<ParamField path="num2" type="number" required>
+  The second number to add.
+</ParamField>
+
+**Returns:** `number` — The sum of `num1` and `num2`.
+
+**Example**
+
+```ts
+const result = Nitrowind.sum(12, 30);
+console.log(result); // 42
+```
+
+**Error handling**
+
+Native errors surface as standard JavaScript exceptions. Wrap calls in a `try/catch` whenever the inputs could be invalid or the native module is unavailable:
+
+```ts
+try {
+  const result = Nitrowind.sum(12, 30);
+  console.log(result); // 42
+} catch (error) {
+  console.error('Native call failed:', error);
+}
+```
+
+---
+
+<Note>
+  `Nitrowind` is a **singleton hybrid object** — it is instantiated automatically when the module is imported. You never call `new Nitrowind()`. Simply import the named export and invoke methods on it directly.
+</Note>
+
+<Tip>
+  Because the spec is written in TypeScript, the return type of `sum` is statically known as `number`. Your editor will surface autocomplete and type errors without any extra configuration.
+</Tip>

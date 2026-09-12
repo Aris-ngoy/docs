@@ -1,0 +1,160 @@
+---
+title: "Use react-native-nitrowind with an Expo SDK 57+ Project"
+sidebarTitle: "Expo"
+description: "Add react-native-nitrowind to an Expo SDK 57+ project, create a development build with expo prebuild, and invoke native methods from JavaScript."
+---
+
+`react-native-nitrowind` is fully compatible with Expo SDK 57 and React Native 0.86. Because it relies on native code compiled at build time, you need a **development build** rather than the standard Expo Go client.
+
+<Warning>
+**Expo Go is not supported.** `react-native-nitrowind` registers a native Nitro Module that must be compiled into the app binary. You must create a development build using `expo prebuild` or EAS Build before running the module.
+</Warning>
+
+## Setup
+
+<Steps>
+
+### Install the package
+
+Install `react-native-nitrowind` and its peer dependency `react-native-nitro-modules` in your Expo project:
+
+<CodeGroup>
+
+```bash npm
+npm install react-native-nitrowind react-native-nitro-modules
+```
+
+```bash yarn
+yarn add react-native-nitrowind react-native-nitro-modules
+```
+
+```bash bun
+bun add react-native-nitrowind react-native-nitro-modules
+```
+
+</CodeGroup>
+
+### Create a development build
+
+Run `expo prebuild` to generate the native `ios/` and `android/` directories, then build and install the development client on your device or simulator:
+
+```bash
+# Generate native project folders
+npx expo prebuild
+
+# Build and run on iOS
+npx expo run:ios
+
+# Build and run on Android
+npx expo run:android
+```
+
+After the first native build, you can iterate on JavaScript without rebuilding unless you add more native dependencies.
+
+### Import and use `Nitrowind`
+
+Import the `Nitrowind` object and call `Nitrowind.sum` from your component. The following is adapted from the Expo example app:
+
+```tsx
+import { StatusBar } from "expo-status-bar";
+import React, { useState } from "react";
+import { Button, StyleSheet, Text, View } from "react-native";
+import { Nitrowind } from "react-native-nitrowind";
+
+export default function App() {
+  const [result, setResult] = useState<number | null>(null);
+
+  const calculateSum = () => {
+    try {
+      const sum = Nitrowind.sum(50, 25);
+      setResult(sum);
+    } catch (error) {
+      console.error("Error invoking Nitrowind.sum:", error);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <StatusBar style="light" />
+      <View style={styles.card}>
+        <Text style={styles.badge}>EXPO EXAMPLE</Text>
+        <Text style={styles.title}>NitroWind Expo App</Text>
+        <Text style={styles.subtitle}>
+          Powered by Nitro Modules with fast native bindings
+        </Text>
+        <View style={styles.buttonContainer}>
+          <Button
+            title="Test Nitrowind.sum(50, 25)"
+            onPress={calculateSum}
+            color="#0284c7"
+          />
+        </View>
+        {result !== null && (
+          <View style={styles.resultContainer}>
+            <Text style={styles.resultLabel}>Native Return Value:</Text>
+            <Text style={styles.resultText}>{result}</Text>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#090d16",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
+  },
+  card: {
+    width: "100%",
+    maxWidth: 420,
+    backgroundColor: "#131b2e",
+    borderRadius: 20,
+    padding: 24,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#1e293b",
+  },
+  badge: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#38bdf8",
+    letterSpacing: 1.2,
+    marginBottom: 8,
+  },
+  title: { fontSize: 22, fontWeight: "700", color: "#ffffff", marginBottom: 6 },
+  subtitle: { fontSize: 14, color: "#94a3b8", textAlign: "center", marginBottom: 24 },
+  buttonContainer: { width: "100%", marginVertical: 10 },
+  resultContainer: {
+    marginTop: 20,
+    padding: 16,
+    backgroundColor: "#1e293b",
+    borderRadius: 12,
+    alignItems: "center",
+    width: "100%",
+  },
+  resultLabel: { fontSize: 12, color: "#94a3b8", marginBottom: 4 },
+  resultText: { fontSize: 32, fontWeight: "800", color: "#38bdf8" },
+});
+```
+
+Tapping the button synchronously invokes the native `sum` implementation and renders the result (`75`) in the UI.
+
+### Start the app
+
+Once you have a development build installed on your device or simulator, start the Metro bundler:
+
+```bash
+bun run start
+```
+
+Metro will connect to your installed development client and reload JavaScript on save.
+
+</Steps>
+
+<Note>
+The tested configuration is **Expo SDK 57** with **React Native 0.86**. Older Expo SDK versions that ship React Native 0.75 or earlier are not supported because `react-native-nitrowind` requires the New Architecture.
+</Note>

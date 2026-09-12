@@ -1,0 +1,55 @@
+---
+title: "Nitro Modules: Fast Native Bindings for React Native"
+sidebarTitle: "Home"
+description: "Learn how to use react-native-nitrowind to call native iOS and Android code from JavaScript with full TypeScript type safety and zero overhead."
+---
+
+Welcome to the **react-native-nitrowind** documentation. Nitrowind is a high-performance React Native SDK built on the [Nitro Modules](https://github.com/mrousavy/nitro) JSI bridge, giving you direct access to native iOS (Swift) and Android (Kotlin) functionality straight from JavaScript. Every API is fully typed so you get compile-time safety without sacrificing any runtime speed.
+
+<CardGroup cols={2}>
+  <Card title="Introduction" icon="rocket" href="/introduction">
+    Understand the architecture behind Nitro Modules and why Nitrowind is faster than traditional native modules.
+  </Card>
+  <Card title="Installation" icon="download" href="/installation">
+    Add react-native-nitrowind to your bare React Native or Expo project in just a few steps.
+  </Card>
+  <Card title="Quickstart" icon="bolt" href="/quickstart">
+    Get up and running in minutes with a hands-on example that calls a native method from JavaScript.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/nitrowind">
+    Explore the full public API surface of the `Nitrowind` object with types, parameters, and return values.
+  </Card>
+</CardGroup>
+
+## Get Started in Three Steps
+
+<Steps>
+  <Step title="Install the packages">
+    Add both `react-native-nitrowind` and the underlying `react-native-nitro-modules` peer dependency to your project.
+
+    ```bash
+    npm install react-native-nitrowind react-native-nitro-modules
+    ```
+
+    Nitrowind supports **bare React Native v0.76+** and **Expo SDK 57+**. No additional native linking steps are required on either platform.
+  </Step>
+  <Step title="Import Nitrowind">
+    Pull the `Nitrowind` object into any JavaScript or TypeScript file in your app.
+
+    ```ts
+    import { Nitrowind } from 'react-native-nitrowind';
+    ```
+
+    TypeScript definitions are bundled automatically — no `@types` package needed.
+  </Step>
+  <Step title="Call a native method">
+    Invoke native functionality directly. Calls cross the JSI bridge synchronously with no serialization overhead.
+
+    ```ts
+    const result = Nitrowind.sum(12, 30);
+    console.log(result); // => 42
+    ```
+
+    Every method is fully typed, so your editor will autocomplete arguments and return values as you type.
+  </Step>
+</Steps>

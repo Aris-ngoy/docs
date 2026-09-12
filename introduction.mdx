@@ -1,0 +1,32 @@
+---
+title: "react-native-nitrowind: High-Performance Native Modules"
+sidebarTitle: "Introduction"
+description: "A React Native library built on Nitro Modules for synchronous Swift and Kotlin calls via JSI — type-safe, zero serialisation, and no bridge overhead."
+---
+
+`react-native-nitrowind` is a React Native library that brings native computation directly into your JavaScript thread without the overhead of the traditional React Native bridge. Built on top of [Nitro Modules](https://github.com/mrousavy/nitro), it lets you call native Swift (iOS) and Kotlin (Android) functions from TypeScript as if they were plain JavaScript — with synchronous return values, full type safety, and zero serialisation cost.
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Native Performance" icon="bolt">
+    Function calls cross the JS/native boundary via JSI — no async bridge, no JSON serialisation, and no message queue latency.
+  </Card>
+  <Card title="TypeScript Safety" icon="shield-check">
+    Every native method is described by a typed TypeScript interface, so your editor catches mismatches before they reach a device.
+  </Card>
+  <Card title="iOS & Android Support" icon="mobile">
+    Native implementations are written in Swift for iOS and Kotlin for Android, and are auto-linked by React Native's standard linking mechanism.
+  </Card>
+  <Card title="Expo Compatible" icon="layer-group">
+    Works with Expo SDK 57+ using a custom config plugin — no need to eject or manage a bare workflow just to use native modules.
+  </Card>
+</CardGroup>
+
+## How It Works
+
+You define a TypeScript spec that extends `HybridObject` — a Nitro Modules concept that maps directly to a native class. Nitro's code-generation tool (`nitrogen`) reads that spec and produces the Swift and Kotlin boilerplate, so the native side always stays in sync with your TypeScript types. At runtime, calls go straight from the JS engine to native memory via JSI, with no bridge round-trip in between.
+
+<Note>
+  `react-native-nitrowind` requires **React Native v0.76 or higher**. If you want to use Nitro Views (native UI components powered by Nitro Modules), you need **React Native v0.78 or higher**.
+</Note>
